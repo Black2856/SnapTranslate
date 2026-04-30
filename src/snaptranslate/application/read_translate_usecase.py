@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
+from threading import Lock
 
 from snaptranslate.domain.models import AppSettings, HistoryEntry, RegionMode
 from snaptranslate.domain.state import AppState, ReadState
@@ -31,6 +32,7 @@ class ReadTranslateUseCase:
         self.overlay_window = overlay_window
         self.status_window = status_window
         self.history_store = history_store
+        self._run_lock = Lock()
 
     def toggle_or_run(self) -> None:
         snapshot = self.state.snapshot()
@@ -42,7 +44,17 @@ class ReadTranslateUseCase:
         self.run()
 
     def run(self, region_override=None) -> None:
+        if not self._run_lock.acquire(blocking=False):
+            self.status_window.set_message("[read]: busy")
+            return
+        try:
+            self._run_locked(region_override=region_override)
+        finally:
+            self._run_lock.release()
+
+    def _run_locked(self, region_override=None) -> None:
         if self.state.is_read_busy():
+            self.status_window.set_message("[read]: busy")
             return
 
         try:

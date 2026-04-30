@@ -54,7 +54,8 @@ class OverlayWindow:
 
             hwnd = self.window.winfo_id()
             style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
-            style |= win32con.WS_EX_LAYERED | win32con.WS_EX_TRANSPARENT | win32con.WS_EX_TOPMOST
+            style &= ~win32con.WS_EX_LAYERED
+            style |= win32con.WS_EX_TRANSPARENT | win32con.WS_EX_TOPMOST
             win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, style)
         except Exception:
             pass

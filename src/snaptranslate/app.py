@@ -39,6 +39,8 @@ class SnapTranslateApp:
         self.settings_window: SettingsWindow | None = None
         self.hotkeys: HotkeyController | None = None
         self.tray: TrayIcon | None = None
+        self._read_launch_lock = threading.Lock()
+        self._read_launch_active = False
         self._wire()
 
     def _wire(self) -> None:
@@ -105,17 +107,38 @@ class SnapTranslateApp:
         if self.state.snapshot().read.value == "overlay_visible":
             self.read_usecase.toggle_or_run()
             return
+        if not self._begin_read_launch():
+            self.status_window.set_message("[read]: busy")
+            return
         region = None
         if self.settings.region_mode == RegionMode.INTERACTIVE:
             region = self.region_selector.select_region()
             if region is None:
                 self.status_window.set_message("[read]: canceled")
+                self._finish_read_launch()
                 return
         threading.Thread(
-            target=lambda: self.read_usecase.run(region_override=region),
+            target=lambda: self._run_read_translate_worker(region),
             name="read-translate",
             daemon=True,
         ).start()
 
     def _run_input_translate(self) -> None:
         threading.Thread(target=self.input_usecase.translate_current_text, name="input-translate", daemon=True).start()
+
+    def _begin_read_launch(self) -> bool:
+        with self._read_launch_lock:
+            if self._read_launch_active or self.state.is_read_busy():
+                return False
+            self._read_launch_active = True
+            return True
+
+    def _finish_read_launch(self) -> None:
+        with self._read_launch_lock:
+            self._read_launch_active = False
+
+    def _run_read_translate_worker(self, region) -> None:
+        try:
+            self.read_usecase.run(region_override=region)
+        finally:
+            self._finish_read_launch()
