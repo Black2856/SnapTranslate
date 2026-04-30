@@ -43,6 +43,9 @@ class InputWindow:
     def mark_copied(self) -> None:
         self.message.configure(text="Copied translation to clipboard.")
 
+    def mark_canceled(self) -> None:
+        self.message.configure(text="Canceled translation.")
+
     def mark_error(self, message: str) -> None:
         self.message.configure(text=f"Error: {message}")
 
