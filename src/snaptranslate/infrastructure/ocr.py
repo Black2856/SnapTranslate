@@ -38,6 +38,8 @@ class PaddleOcrService:
             use_doc_orientation_classify=False,
             use_doc_unwarping=False,
             use_textline_orientation=True,
+            enable_mkldnn=False,
+            device="cpu",
         )
         return self._engine
 
