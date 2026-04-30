@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+.tmp/
+pytest-cache-files-*/
+
+# Local configuration and logs
+.env
+*.log
+config.local.json
+history.jsonl
+*.jsonl
+
+# OCR/model artifacts must not be committed
+.paddleocr/
+models/
+data/models/
+*.onnx
+*.pdmodel
+*.pdiparams
