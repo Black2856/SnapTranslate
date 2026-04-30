@@ -3,7 +3,7 @@ name = "snaptranslate"
 version = "0.1.0"
 description = "Windows OCR and prompt-based translation overlay tool"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11,<3.13"
 dependencies = [
     "openai>=1.0.0",
     "pillow>=10.0.0",
@@ -13,6 +13,7 @@ dependencies = [
 [project.optional-dependencies]
 ocr = [
     "paddleocr>=2.7.0",
+    "paddlepaddle>=2.6.0",
 ]
 dev = [
     "pytest>=8.0.0",
@@ -33,4 +34,3 @@ pythonpath = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-

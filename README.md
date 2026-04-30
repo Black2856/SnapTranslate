@@ -19,6 +19,15 @@ PaddleOCR is optional until OCR is used:
 uv sync --extra ocr
 ```
 
+PaddlePaddle is not expected to work on every Python version. Use Python 3.11 or 3.12 for OCR:
+
+```powershell
+uv python pin 3.11
+uv sync --extra ocr
+```
+
+If `.venv` was already created with Python 3.13, remove `.venv` and run the commands above again.
+
 Set your API key before translating:
 
 ```powershell

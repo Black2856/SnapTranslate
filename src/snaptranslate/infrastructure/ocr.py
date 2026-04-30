@@ -31,7 +31,7 @@ class PaddleOcrService:
         except ImportError as exc:
             raise RuntimeError(
                 "PaddleOCR is not installed. Install OCR dependencies with "
-                "`uv sync --extra ocr`."
+                "`uv sync --extra ocr`. This installs both paddleocr and paddlepaddle."
             ) from exc
 
         self._engine = PaddleOCR(
@@ -60,4 +60,3 @@ class PaddleOcrService:
                 if len(item) >= 2 and item[1]:
                     lines.append(str(item[1][0]))
         return OcrResult("\n".join(line.strip() for line in lines if line.strip()))
-
