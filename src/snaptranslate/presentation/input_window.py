@@ -5,7 +5,7 @@ from collections.abc import Callable
 
 
 class InputWindow:
-    def __init__(self, root: tk.Tk, on_submit: Callable[[], None]) -> None:
+    def __init__(self, root: tk.Tk, on_submit: Callable[[str], None]) -> None:
         self.root = root
         self.on_submit = on_submit
         self.window = tk.Toplevel(root)
@@ -50,8 +50,8 @@ class InputWindow:
         self.message.configure(text=f"Error: {message}")
 
     def _on_enter(self, event) -> str:
-        self.on_submit()
-        self.hide(keep_draft=True)
+        self.on_submit(self.get_text())
+        self.hide(keep_draft=False)
         return "break"
 
     def _on_shift_enter(self, event) -> None:

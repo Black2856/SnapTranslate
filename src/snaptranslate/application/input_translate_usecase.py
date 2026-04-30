@@ -42,10 +42,13 @@ class InputTranslateUseCase:
         self.status_window.set_message("[input]: visible")
 
     def translate_current_text(self) -> None:
+        self.translate_text(self.input_window.get_text())
+
+    def translate_text(self, source: str) -> None:
         if not self._begin_translation():
             return
 
-        source = self.input_window.get_text().strip()
+        source = source.strip()
         if not source:
             self._finish_translation()
             self.status_window.set_message("[input]: empty")

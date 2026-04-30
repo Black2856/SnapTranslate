@@ -123,8 +123,8 @@ class SnapTranslateApp:
             daemon=True,
         ).start()
 
-    def _run_input_translate(self) -> None:
-        threading.Thread(target=self.input_usecase.translate_current_text, name="input-translate", daemon=True).start()
+    def _run_input_translate(self, source: str) -> None:
+        threading.Thread(target=lambda: self.input_usecase.translate_text(source), name="input-translate", daemon=True).start()
 
     def _begin_read_launch(self) -> bool:
         with self._read_launch_lock:
