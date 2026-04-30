@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from types import ModuleType
 
+from snaptranslate.infrastructure import ocr
 from snaptranslate.infrastructure.ocr import PaddleOcrService
 
 
@@ -46,3 +47,20 @@ def test_extract_text_uses_predict(monkeypatch) -> None:
 
     assert result.text == "hello\nworld"
     assert not Path(captured_path["value"]).exists()
+
+
+def test_suppress_paddle_output_falls_back_when_stream_has_no_fd(monkeypatch) -> None:
+    class BrokenStream:
+        def fileno(self) -> int:
+            raise OSError(1, "Incorrect function")
+
+        def flush(self) -> None:
+            pass
+
+    monkeypatch.setattr(ocr.sys, "stdout", BrokenStream())
+    monkeypatch.setattr(ocr.sys, "stderr", BrokenStream())
+
+    with ocr._suppress_paddle_output():
+        reached = True
+
+    assert reached is True
