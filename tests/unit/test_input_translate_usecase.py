@@ -68,7 +68,7 @@ def test_input_translation_copies_result() -> None:
     assert status.messages[-1] == "[input]: copied"
 
 
-def test_input_translation_second_run_cancels_active_translation() -> None:
+def test_input_translation_second_run_is_ignored_until_active_translation_finishes() -> None:
     started = threading.Event()
     release = threading.Event()
 
@@ -98,6 +98,7 @@ def test_input_translation_second_run_cancels_active_translation() -> None:
     release.set()
     worker.join(timeout=5)
 
-    assert clipboard.value == ""
-    assert input_window.canceled is True
-    assert "[input]: canceled" in status.messages
+    assert clipboard.value == "translated:hello"
+    assert input_window.canceled is False
+    assert "[input]: busy" in status.messages
+    assert status.messages[-1] == "[input]: copied"

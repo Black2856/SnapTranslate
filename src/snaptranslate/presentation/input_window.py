@@ -51,6 +51,7 @@ class InputWindow:
 
     def _on_enter(self, event) -> str:
         self.on_submit()
+        self.hide(keep_draft=True)
         return "break"
 
     def _on_shift_enter(self, event) -> None:
