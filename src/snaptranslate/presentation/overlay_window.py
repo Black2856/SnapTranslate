@@ -12,6 +12,7 @@ class OverlayWindow:
         self.window.title("SnapTranslate Overlay")
         self.window.overrideredirect(True)
         self.window.attributes("-topmost", True)
+        self.window.attributes("-alpha", 1.0)
         self.transparent_color = "#010101"
         self.window.configure(bg=self.transparent_color)
         self.window.attributes("-transparentcolor", self.transparent_color)
@@ -21,6 +22,8 @@ class OverlayWindow:
             bg=self.transparent_color,
             justify="left",
             wraplength=400,
+            padx=4,
+            pady=2,
         )
         self.label.pack(fill="both", expand=True)
         self.window.withdraw()
@@ -48,11 +51,13 @@ class OverlayWindow:
         try:
             import win32con
             import win32gui
+            import win32api
 
             hwnd = self.window.winfo_id()
             style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
             style |= win32con.WS_EX_LAYERED | win32con.WS_EX_TRANSPARENT | win32con.WS_EX_TOPMOST
             win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, style)
+            color_key = win32api.RGB(1, 1, 1)
+            win32gui.SetLayeredWindowAttributes(hwnd, color_key, 255, win32con.LWA_COLORKEY)
         except Exception:
             pass
-

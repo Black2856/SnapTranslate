@@ -22,50 +22,62 @@ class SettingsWindow:
 
         self.window = tk.Toplevel(self.root)
         self.window.title("SnapTranslate Settings")
-        self.window.geometry("720x680+160+100")
+        self.window.geometry("760x760+160+80")
+        self.window.minsize(640, 520)
 
-        frame = tk.Frame(self.window)
-        frame.pack(fill="both", expand=True, padx=12, pady=12)
+        canvas = tk.Canvas(self.window, highlightthickness=0)
+        scrollbar = tk.Scrollbar(self.window, orient="vertical", command=canvas.yview)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        scrollbar.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
 
-        self.read_hotkey = self._entry(frame, "Read hotkey", self.settings.read_hotkey)
-        self.input_hotkey = self._entry(frame, "Input hotkey", self.settings.input_hotkey)
-        self.model = self._entry(frame, "ChatGPT model", self.settings.chatgpt_model)
-        self.ocr_language = self._entry(frame, "PaddleOCR language", self.settings.ocr_language)
-        self.text_color = self._entry(frame, "Overlay text color", self.settings.overlay_text_color)
-        self.font_family = self._entry(frame, "Overlay font", self.settings.overlay_font_family)
-        self.font_size = self._entry(frame, "Overlay font size", str(self.settings.overlay_font_size))
+        frame = tk.Frame(canvas)
+        content_window = canvas.create_window((0, 0), window=frame, anchor="nw")
+        frame.bind("<Configure>", lambda event: canvas.configure(scrollregion=canvas.bbox("all")))
+        canvas.bind("<Configure>", lambda event: canvas.itemconfigure(content_window, width=event.width))
+
+        inner = tk.Frame(frame)
+        inner.pack(fill="both", expand=True, padx=12, pady=12)
+
+        self.read_hotkey = self._entry(inner, "Read hotkey", self.settings.read_hotkey)
+        self.input_hotkey = self._entry(inner, "Input hotkey", self.settings.input_hotkey)
+        self.model = self._entry(inner, "ChatGPT model", self.settings.chatgpt_model)
+        self.ocr_language = self._entry(inner, "PaddleOCR language", self.settings.ocr_language)
+        self.text_color = self._entry(inner, "Overlay text color", self.settings.overlay_text_color)
+        self.font_family = self._entry(inner, "Overlay font", self.settings.overlay_font_family)
+        self.font_size = self._entry(inner, "Overlay font size", str(self.settings.overlay_font_size))
 
         self.show_status_var = tk.BooleanVar(value=self.settings.show_status)
-        tk.Checkbutton(frame, text="Show status", variable=self.show_status_var).pack(anchor="w")
+        tk.Checkbutton(inner, text="Show status", variable=self.show_status_var).pack(anchor="w")
         self.keep_draft_var = tk.BooleanVar(value=self.settings.keep_draft_on_hide)
-        tk.Checkbutton(frame, text="Keep input draft on hide", variable=self.keep_draft_var).pack(anchor="w")
+        tk.Checkbutton(inner, text="Keep input draft on hide", variable=self.keep_draft_var).pack(anchor="w")
         self.history_var = tk.BooleanVar(value=self.settings.enable_history)
-        tk.Checkbutton(frame, text="Enable local history JSONL", variable=self.history_var).pack(anchor="w")
+        tk.Checkbutton(inner, text="Enable local history JSONL", variable=self.history_var).pack(anchor="w")
 
         self.region_mode_var = tk.StringVar(value=self.settings.region_mode.value)
-        tk.Label(frame, text="Region mode").pack(anchor="w", pady=(8, 0))
-        tk.Radiobutton(frame, text="Saved", variable=self.region_mode_var, value=RegionMode.SAVED.value).pack(anchor="w")
+        tk.Label(inner, text="Region mode").pack(anchor="w", pady=(8, 0))
+        tk.Radiobutton(inner, text="Saved", variable=self.region_mode_var, value=RegionMode.SAVED.value).pack(anchor="w")
         tk.Radiobutton(
-            frame,
+            inner,
             text="Interactive drag each time",
             variable=self.region_mode_var,
             value=RegionMode.INTERACTIVE.value,
         ).pack(anchor="w")
-        tk.Button(frame, text="Set saved region", command=self._set_region).pack(anchor="w", pady=4)
-        self.region_label = tk.Label(frame, text=self._region_text())
+        tk.Button(inner, text="Set saved region", command=self._set_region).pack(anchor="w", pady=4)
+        self.region_label = tk.Label(inner, text=self._region_text())
         self.region_label.pack(anchor="w")
 
-        tk.Label(frame, text="Read translation prompt").pack(anchor="w", pady=(8, 0))
-        self.read_prompt = tk.Text(frame, height=5, wrap="word")
+        tk.Label(inner, text="Read translation prompt").pack(anchor="w", pady=(8, 0))
+        self.read_prompt = tk.Text(inner, height=7, wrap="word")
         self.read_prompt.insert("1.0", self.settings.read_translation_prompt)
         self.read_prompt.pack(fill="x")
 
-        tk.Label(frame, text="Input translation prompt").pack(anchor="w", pady=(8, 0))
-        self.input_prompt = tk.Text(frame, height=5, wrap="word")
+        tk.Label(inner, text="Input translation prompt").pack(anchor="w", pady=(8, 0))
+        self.input_prompt = tk.Text(inner, height=7, wrap="word")
         self.input_prompt.insert("1.0", self.settings.input_translation_prompt)
         self.input_prompt.pack(fill="x")
 
-        buttons = tk.Frame(frame)
+        buttons = tk.Frame(inner)
         buttons.pack(fill="x", pady=12)
         tk.Button(buttons, text="Save", command=self._save).pack(side="right")
 

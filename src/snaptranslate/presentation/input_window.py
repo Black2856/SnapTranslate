@@ -11,11 +11,12 @@ class InputWindow:
         self.window = tk.Toplevel(root)
         self.window.title("SnapTranslate Input")
         self.window.attributes("-topmost", True)
-        self.window.geometry("560x180+120+120")
+        self.window.geometry("560x96+120+120")
+        self.window.minsize(360, 88)
         self.window.withdraw()
         self.window.protocol("WM_DELETE_WINDOW", lambda: self.hide(keep_draft=True))
 
-        self.text = tk.Text(self.window, height=6, wrap="word", font=("Yu Gothic UI", 11))
+        self.text = tk.Text(self.window, height=3, wrap="word", font=("Yu Gothic UI", 11))
         self.text.pack(fill="both", expand=True, padx=8, pady=(8, 4))
         self.message = tk.Label(self.window, text="Enter: translate, Shift+Enter: newline", anchor="w")
         self.message.pack(fill="x", padx=8, pady=(0, 8))
@@ -52,4 +53,3 @@ class InputWindow:
     def _on_shift_enter(self, event) -> None:
         self.text.insert("insert", "\n")
         return "break"
-

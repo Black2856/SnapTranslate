@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import sys
 import tempfile
 import warnings
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
@@ -98,56 +97,8 @@ def _suppress_paddle_output():
         yield
         return
 
-    if os.environ.get("SNAPTRANSLATE_SUPPRESS_NATIVE_LOGS") != "1":
-        with open(os.devnull, "w", encoding="utf-8") as devnull, warnings.catch_warnings():
-            warnings.filterwarnings("ignore", message="No ccache found.*")
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            with redirect_stdout(devnull), redirect_stderr(devnull):
-                yield
-        return
-
-    stdout_fd = None
-    stderr_fd = None
-    saved_stdout_fd = None
-    saved_stderr_fd = None
-    redirect_output = False
-    try:
-        stdout_fd = sys.stdout.fileno()
-        stderr_fd = sys.stderr.fileno()
-        saved_stdout_fd = os.dup(stdout_fd)
-        saved_stderr_fd = os.dup(stderr_fd)
-        sys.stdout.flush()
-        sys.stderr.flush()
-        redirect_output = True
-    except (AttributeError, OSError, ValueError):
-        redirect_output = False
-
-    try:
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", message="No ccache found.*")
-            warnings.filterwarnings("ignore", category=DeprecationWarning)
-            if not redirect_output:
-                yield
-                return
-
-            assert stdout_fd is not None
-            assert stderr_fd is not None
-            with open(os.devnull, "w", encoding="utf-8") as devnull:
-                os.dup2(devnull.fileno(), stdout_fd)
-                os.dup2(devnull.fileno(), stderr_fd)
-                yield
-    finally:
-        if redirect_output and saved_stdout_fd is not None and saved_stderr_fd is not None:
-            try:
-                sys.stdout.flush()
-                sys.stderr.flush()
-                os.dup2(saved_stdout_fd, stdout_fd)
-                os.dup2(saved_stderr_fd, stderr_fd)
-            finally:
-                os.close(saved_stdout_fd)
-                os.close(saved_stderr_fd)
-        elif saved_stdout_fd is not None or saved_stderr_fd is not None:
-            if saved_stdout_fd is not None:
-                os.close(saved_stdout_fd)
-            if saved_stderr_fd is not None:
-                os.close(saved_stderr_fd)
+    with open(os.devnull, "w", encoding="utf-8") as devnull, warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="No ccache found.*")
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        with redirect_stdout(devnull), redirect_stderr(devnull):
+            yield
