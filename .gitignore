@@ -16,6 +16,7 @@ history.jsonl
 
 # OCR/model artifacts must not be committed
 .paddleocr/
+.paddlex/
 models/
 data/models/
 *.onnx
