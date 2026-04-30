@@ -4,7 +4,7 @@ import os
 import sys
 import tempfile
 import warnings
-from contextlib import contextmanager
+from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Protocol
 
@@ -96,6 +96,14 @@ def _extract_page_text(page) -> list[str]:
 def _suppress_paddle_output():
     if os.environ.get("SNAPTRANSLATE_PADDLE_VERBOSE") == "1":
         yield
+        return
+
+    if os.environ.get("SNAPTRANSLATE_SUPPRESS_NATIVE_LOGS") != "1":
+        with open(os.devnull, "w", encoding="utf-8") as devnull, warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="No ccache found.*")
+            warnings.filterwarnings("ignore", category=DeprecationWarning)
+            with redirect_stdout(devnull), redirect_stderr(devnull):
+                yield
         return
 
     stdout_fd = None
