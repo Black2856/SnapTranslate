@@ -3,7 +3,7 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import messagebox
 
-from snaptranslate.domain.models import AppSettings, RegionMode
+from snaptranslate.domain.models import ApiKeySource, AppSettings, RegionMode
 
 
 class SettingsWindow:
@@ -42,6 +42,21 @@ class SettingsWindow:
         self.read_hotkey = self._entry(inner, "Read hotkey", self.settings.read_hotkey)
         self.input_hotkey = self._entry(inner, "Input hotkey", self.settings.input_hotkey)
         self.model = self._entry(inner, "ChatGPT model", self.settings.chatgpt_model)
+        self.api_key_source_var = tk.StringVar(value=self.settings.api_key_source.value)
+        tk.Label(inner, text="API key source").pack(anchor="w", pady=(8, 0))
+        tk.Radiobutton(
+            inner,
+            text="OPENAI_API_KEY environment variable",
+            variable=self.api_key_source_var,
+            value=ApiKeySource.ENV.value,
+        ).pack(anchor="w")
+        tk.Radiobutton(
+            inner,
+            text="Saved in config.json",
+            variable=self.api_key_source_var,
+            value=ApiKeySource.CONFIG.value,
+        ).pack(anchor="w")
+        self.api_key = self._entry(inner, "API key", self.settings.api_key, show="*")
         self.text_color = self._entry(inner, "Overlay text color", self.settings.overlay_text_color)
         self.font_family = self._entry(inner, "Overlay font", self.settings.overlay_font_family)
         self.font_size = self._entry(inner, "Overlay font size", str(self.settings.overlay_font_size))
@@ -80,9 +95,9 @@ class SettingsWindow:
         buttons.pack(fill="x", pady=12)
         tk.Button(buttons, text="Save", command=self._save).pack(side="right")
 
-    def _entry(self, parent, label: str, value: str) -> tk.Entry:
+    def _entry(self, parent, label: str, value: str, show: str | None = None) -> tk.Entry:
         tk.Label(parent, text=label).pack(anchor="w", pady=(6, 0))
-        entry = tk.Entry(parent)
+        entry = tk.Entry(parent, show=show)
         entry.insert(0, value)
         entry.pack(fill="x")
         return entry
@@ -104,6 +119,8 @@ class SettingsWindow:
             self.settings.read_hotkey = self.read_hotkey.get().strip()
             self.settings.input_hotkey = self.input_hotkey.get().strip()
             self.settings.chatgpt_model = self.model.get().strip()
+            self.settings.api_key_source = ApiKeySource(self.api_key_source_var.get())
+            self.settings.api_key = self.api_key.get().strip()
             self.settings.overlay_text_color = self.text_color.get().strip()
             self.settings.overlay_font_family = self.font_family.get().strip()
             self.settings.overlay_font_size = int(self.font_size.get().strip())

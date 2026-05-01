@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from snaptranslate.domain.models import AppSettings, RegionMode, ScreenRegion
+from snaptranslate.domain.models import ApiKeySource, AppSettings, RegionMode, ScreenRegion
 from snaptranslate.infrastructure.config_store import ConfigStore
 
 
@@ -13,6 +13,8 @@ def test_config_round_trip() -> None:
     settings = AppSettings(
         region_mode=RegionMode.SAVED,
         saved_region=ScreenRegion(1, 2, 3, 4),
+        api_key_source=ApiKeySource.CONFIG,
+        api_key="sk-test",
         enable_history=True,
     )
 
@@ -20,5 +22,7 @@ def test_config_round_trip() -> None:
     loaded = store.load()
 
     assert loaded.saved_region == ScreenRegion(1, 2, 3, 4)
+    assert loaded.api_key_source == ApiKeySource.CONFIG
+    assert loaded.api_key == "sk-test"
     assert loaded.enable_history is True
     path.unlink(missing_ok=True)
