@@ -15,6 +15,11 @@ class ApiKeySource(str, Enum):
     CONFIG = "config"
 
 
+class ReadResultDisplayMode(str, Enum):
+    OVERLAY = "overlay"
+    WINDOW = "window"
+
+
 @dataclass(frozen=True)
 class ScreenRegion:
     left: int
@@ -77,6 +82,7 @@ class AppSettings:
         "Translate the input text naturally. Return only the translation.\n\n{text}"
     )
     chatgpt_model: str = "gpt-5.4-mini"
+    read_result_display_mode: ReadResultDisplayMode = ReadResultDisplayMode.OVERLAY
     overlay_text_color: str = "#FFFFFF"
     overlay_font_family: str = "Yu Gothic UI"
     overlay_font_size: int = 18
@@ -103,6 +109,7 @@ class AppSettings:
         data = asdict(self)
         data["region_mode"] = self.region_mode.value
         data["api_key_source"] = self.api_key_source.value
+        data["read_result_display_mode"] = self.read_result_display_mode.value
         return data
 
     @classmethod
@@ -119,6 +126,9 @@ class AppSettings:
         merged = {**defaults.to_json_dict(), **filtered}
         merged["region_mode"] = RegionMode(merged["region_mode"])
         merged["api_key_source"] = ApiKeySource(merged["api_key_source"])
+        merged["read_result_display_mode"] = ReadResultDisplayMode(
+            merged["read_result_display_mode"]
+        )
         merged["saved_region"] = ScreenRegion.from_dict(merged.get("saved_region"))
         settings = cls(**merged)
         settings.validate()

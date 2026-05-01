@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import queue
 import tkinter as tk
 from collections.abc import Callable
 
@@ -15,6 +16,7 @@ class InputWindow:
         self.window.minsize(360, 88)
         self.window.withdraw()
         self.window.protocol("WM_DELETE_WINDOW", lambda: self.hide(keep_draft=True))
+        self._messages: queue.Queue[str] = queue.Queue()
 
         self.text = tk.Text(self.window, height=3, wrap="word", font=("Yu Gothic UI", 11))
         self.text.pack(fill="both", expand=True, padx=8, pady=(8, 4))
@@ -23,6 +25,7 @@ class InputWindow:
 
         self.text.bind("<Return>", self._on_enter)
         self.text.bind("<Shift-Return>", self._on_shift_enter)
+        self.root.after(50, self._drain_messages)
 
     def show(self) -> None:
         self.window.deiconify()
@@ -41,13 +44,24 @@ class InputWindow:
         return self.text.get("1.0", "end").strip()
 
     def mark_copied(self) -> None:
-        self.message.configure(text="Copied translation to clipboard.")
+        self._messages.put("Copied translation to clipboard.")
 
     def mark_canceled(self) -> None:
-        self.message.configure(text="Canceled translation.")
+        self._messages.put("Canceled translation.")
 
     def mark_error(self, message: str) -> None:
-        self.message.configure(text=f"Error: {message}")
+        self._messages.put(f"Error: {message}")
+
+    def _drain_messages(self) -> None:
+        message = None
+        while True:
+            try:
+                message = self._messages.get_nowait()
+            except queue.Empty:
+                break
+        if message is not None:
+            self.message.configure(text=message)
+        self.root.after(50, self._drain_messages)
 
     def _on_enter(self, event) -> str:
         self.on_submit(self.get_text())

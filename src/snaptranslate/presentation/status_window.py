@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import queue
 import tkinter as tk
 
 
@@ -22,11 +23,13 @@ class StatusWindow:
         )
         self.label.pack()
         self._visible = visible
+        self._messages: queue.Queue[str] = queue.Queue()
         self._position()
         if visible:
             self.window.deiconify()
         else:
             self.window.withdraw()
+        self.root.after(50, self._drain_messages)
 
     def _position(self) -> None:
         self.window.update_idletasks()
@@ -35,7 +38,18 @@ class StatusWindow:
         self.window.geometry(f"+{screen_width - width - 16}+16")
 
     def set_message(self, message: str) -> None:
-        self.root.after(0, self._set_message, message)
+        self._messages.put(message)
+
+    def _drain_messages(self) -> None:
+        message = None
+        while True:
+            try:
+                message = self._messages.get_nowait()
+            except queue.Empty:
+                break
+        if message is not None:
+            self._set_message(message)
+        self.root.after(50, self._drain_messages)
 
     def _set_message(self, message: str) -> None:
         self.label.configure(text=message)

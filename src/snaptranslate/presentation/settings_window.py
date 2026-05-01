@@ -3,7 +3,12 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import messagebox
 
-from snaptranslate.domain.models import ApiKeySource, AppSettings, RegionMode
+from snaptranslate.domain.models import (
+    ApiKeySource,
+    AppSettings,
+    ReadResultDisplayMode,
+    RegionMode,
+)
 
 
 class SettingsWindow:
@@ -65,6 +70,23 @@ class SettingsWindow:
         self.text_color = self._entry(inner, "Overlay text color", self.settings.overlay_text_color)
         self.font_family = self._entry(inner, "Overlay font", self.settings.overlay_font_family)
         self.font_size = self._entry(inner, "Overlay font size", str(self.settings.overlay_font_size))
+
+        self.read_result_display_mode_var = tk.StringVar(
+            value=self.settings.read_result_display_mode.value
+        )
+        tk.Label(inner, text="Read result display").pack(anchor="w", pady=(8, 0))
+        tk.Radiobutton(
+            inner,
+            text="Overlay on captured region",
+            variable=self.read_result_display_mode_var,
+            value=ReadResultDisplayMode.OVERLAY.value,
+        ).pack(anchor="w")
+        tk.Radiobutton(
+            inner,
+            text="Normal window",
+            variable=self.read_result_display_mode_var,
+            value=ReadResultDisplayMode.WINDOW.value,
+        ).pack(anchor="w")
 
         self.show_status_var = tk.BooleanVar(value=self.settings.show_status)
         tk.Checkbutton(inner, text="Show status", variable=self.show_status_var).pack(anchor="w")
@@ -130,6 +152,9 @@ class SettingsWindow:
             self.settings.overlay_text_color = self.text_color.get().strip()
             self.settings.overlay_font_family = self.font_family.get().strip()
             self.settings.overlay_font_size = int(self.font_size.get().strip())
+            self.settings.read_result_display_mode = ReadResultDisplayMode(
+                self.read_result_display_mode_var.get()
+            )
             self.settings.show_status = self.show_status_var.get()
             self.settings.keep_draft_on_hide = self.keep_draft_var.get()
             self.settings.enable_history = self.history_var.get()

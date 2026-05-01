@@ -8,7 +8,7 @@ from snaptranslate.application.hotkey_controller import HotkeyController
 from snaptranslate.application.input_translate_usecase import InputTranslateUseCase
 from snaptranslate.application.read_translate_usecase import ReadTranslateUseCase
 from snaptranslate.domain.models import AppSettings, RegionMode
-from snaptranslate.domain.state import AppState
+from snaptranslate.domain.state import AppState, ReadState
 from snaptranslate.infrastructure.clipboard import ClipboardService
 from snaptranslate.infrastructure.config_store import ConfigStore
 from snaptranslate.infrastructure.history_store import HistoryStore
@@ -32,7 +32,7 @@ class SnapTranslateApp:
         self.root = tk.Tk()
         self.root.withdraw()
         self.status_window = StatusWindow(self.root, visible=self.settings.show_status)
-        self.overlay_window = OverlayWindow(self.root)
+        self.overlay_window = OverlayWindow(self.root, on_close=self._handle_read_result_close)
         self.region_selector = RegionSelector(self.root)
         self.input_window: InputWindow | None = None
         self.settings_window: SettingsWindow | None = None
@@ -100,6 +100,11 @@ class SnapTranslateApp:
         self.config_store.save(settings)
         self.settings = settings
         self.status_window.set_visible(settings.show_status)
+
+    def _handle_read_result_close(self) -> None:
+        if self.state.snapshot().read == ReadState.OVERLAY_VISIBLE:
+            self.state.set_read(ReadState.IDLE, "[read]: idle")
+            self.status_window.set_message("[read]: idle")
 
     def _run_read_translate(self) -> None:
         if self.state.snapshot().read.value == "overlay_visible":
