@@ -8,7 +8,8 @@ from threading import Lock
 class ReadState(str, Enum):
     IDLE = "idle"
     REGION_SELECTING = "region_selecting"
-    OCR_RUNNING = "ocr_running"
+    CAPTURING = "capturing"
+    ANALYZING = "analyzing"
     TRANSLATING = "translating"
     OVERLAY_VISIBLE = "overlay_visible"
     ERROR = "error"
@@ -54,11 +55,11 @@ class AppState:
         with self._lock:
             return self._read in {
                 ReadState.REGION_SELECTING,
-                ReadState.OCR_RUNNING,
+                ReadState.CAPTURING,
+                ReadState.ANALYZING,
                 ReadState.TRANSLATING,
             }
 
     def is_input_busy(self) -> bool:
         with self._lock:
             return self._input == InputState.TRANSLATING
-

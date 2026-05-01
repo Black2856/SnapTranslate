@@ -12,7 +12,6 @@ from snaptranslate.domain.state import AppState
 from snaptranslate.infrastructure.clipboard import ClipboardService
 from snaptranslate.infrastructure.config_store import ConfigStore
 from snaptranslate.infrastructure.history_store import HistoryStore
-from snaptranslate.infrastructure.ocr import PaddleOcrService
 from snaptranslate.infrastructure.screenshot import ScreenshotService
 from snaptranslate.infrastructure.translator import ChatGptTranslator
 from snaptranslate.presentation.input_window import InputWindow
@@ -61,7 +60,6 @@ class SnapTranslateApp:
             state=self.state,
             region_selector=self.region_selector,
             screenshot_service=ScreenshotService(),
-            ocr_service=PaddleOcrService(self.settings.ocr_language),
             translator=translator,
             overlay_window=self.overlay_window,
             status_window=self.status_window,

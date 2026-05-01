@@ -17,7 +17,6 @@ class ReadTranslateUseCase:
         state: AppState,
         region_selector,
         screenshot_service,
-        ocr_service,
         translator,
         overlay_window,
         status_window,
@@ -27,7 +26,6 @@ class ReadTranslateUseCase:
         self.state = state
         self.region_selector = region_selector
         self.screenshot_service = screenshot_service
-        self.ocr_service = ocr_service
         self.translator = translator
         self.overlay_window = overlay_window
         self.status_window = status_window
@@ -62,23 +60,36 @@ class ReadTranslateUseCase:
             self.status_window.set_message("[read]: selecting")
             region = region_override or self._get_region()
             if region is None:
-                raise RuntimeError("OCR region is not set.")
+                raise RuntimeError("Read region is not set.")
 
-            self.state.set_read(ReadState.OCR_RUNNING, "[read]: OCR")
-            self.status_window.set_message("[read]: OCR")
+            self.state.set_read(ReadState.CAPTURING, "[read]: capturing")
+            self.status_window.set_message("[read]: capturing")
             image = self.screenshot_service.capture(region)
-            ocr_result = self.ocr_service.extract_text(image)
-            if not ocr_result.text.strip():
-                raise RuntimeError("OCR result was empty.")
 
-            self.state.set_read(ReadState.TRANSLATING, "[read]: translating")
-            self.status_window.set_message("[read]: translating")
-            result = self.translator.translate(ocr_result.text, self.settings.read_translation_prompt)
+            self.state.set_read(ReadState.ANALYZING, "[read]: analyzing")
+            self.status_window.set_message("[read]: analyzing")
+            result = self.translator.translate_image(image, self.settings.read_image_prompt)
+            if not result.text.strip():
+                raise RuntimeError("Image translation response was empty.")
 
             self.overlay_window.show_text(result.text, region, self.settings)
             self.state.set_read(ReadState.OVERLAY_VISIBLE, "[read]: visible")
             self.status_window.set_message("[read]: visible")
-            self._append_history("read", ocr_result.text, result.text, result.model)
+            self._append_history(
+                mode="read",
+                source="[image]",
+                translated=result.text,
+                model=result.model,
+                metadata={
+                    "region": {
+                        "left": region.left,
+                        "top": region.top,
+                        "width": region.width,
+                        "height": region.height,
+                    },
+                    "image_size": {"width": image.width, "height": image.height},
+                },
+            )
         except Exception as exc:
             logger.exception("Read translation failed")
             self.state.set_read(ReadState.ERROR, "[read]: error")
@@ -89,7 +100,14 @@ class ReadTranslateUseCase:
             return self.settings.saved_region
         return self.region_selector.select_region()
 
-    def _append_history(self, mode: str, source: str, translated: str, model: str) -> None:
+    def _append_history(
+        self,
+        mode: str,
+        source: str,
+        translated: str,
+        model: str,
+        metadata: dict | None = None,
+    ) -> None:
         if not self.settings.enable_history or not self.history_store:
             return
         self.history_store.append(
@@ -99,5 +117,6 @@ class ReadTranslateUseCase:
                 source_text=source,
                 translated_text=translated,
                 model=model,
+                metadata=metadata or {},
             )
         )

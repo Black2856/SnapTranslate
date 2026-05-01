@@ -14,13 +14,6 @@ class FakeScreenshot:
         return Image.new("RGB", (region.width, region.height), "white")
 
 
-class FakeOcr:
-    def extract_text(self, image: Image.Image):
-        from snaptranslate.domain.models import OcrResult
-
-        return OcrResult("hello")
-
-
 class FakeOverlay:
     def __init__(self) -> None:
         self.text = ""
@@ -45,7 +38,7 @@ def test_read_translation_duplicate_run_is_blocked() -> None:
     release = threading.Event()
 
     class SlowTranslator:
-        def translate(self, text: str, prompt: str) -> TranslationResult:
+        def translate_image(self, image: Image.Image, prompt: str) -> TranslationResult:
             started.set()
             release.wait(timeout=5)
             return TranslationResult("translated", "fake")
@@ -57,7 +50,6 @@ def test_read_translation_duplicate_run_is_blocked() -> None:
         state=AppState(),
         region_selector=None,
         screenshot_service=FakeScreenshot(),
-        ocr_service=FakeOcr(),
         translator=SlowTranslator(),
         overlay_window=overlay,
         status_window=status,
@@ -71,6 +63,6 @@ def test_read_translation_duplicate_run_is_blocked() -> None:
     release.set()
     worker.join(timeout=5)
 
-    assert status.messages.count("[read]: translating") == 1
+    assert status.messages.count("[read]: analyzing") == 1
     assert "[read]: busy" in status.messages
     assert overlay.text == "translated"

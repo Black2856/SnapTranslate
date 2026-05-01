@@ -57,7 +57,7 @@ class InputTranslateUseCase:
         try:
             self.state.set_input(InputState.TRANSLATING, "[input]: translating")
             self.status_window.set_message("[input]: translating")
-            result = self.translator.translate(source, self.settings.input_translation_prompt)
+            result = self.translator.translate_text(source, self.settings.input_translation_prompt)
             self.clipboard_service.copy_text(result.text)
             self.state.set_input(InputState.COPIED, "[input]: copied")
             self.status_window.set_message("[input]: copied")

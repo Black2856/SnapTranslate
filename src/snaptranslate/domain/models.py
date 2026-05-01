@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, fields
 from enum import Enum
 from typing import Any
 
@@ -70,14 +70,13 @@ class AppSettings:
     region_mode: RegionMode = RegionMode.SAVED
     saved_region: ScreenRegion | None = None
     show_status: bool = True
-    read_translation_prompt: str = (
-        "Translate the OCR text naturally. Return only the translation.\n\n{text}"
+    read_image_prompt: str = (
+        "Read the text in the image and translate it naturally. Return only the translation."
     )
     input_translation_prompt: str = (
         "Translate the input text naturally. Return only the translation.\n\n{text}"
     )
     chatgpt_model: str = "gpt-5.4-mini"
-    ocr_language: str = "japan"
     overlay_text_color: str = "#FFFFFF"
     overlay_font_family: str = "Yu Gothic UI"
     overlay_font_size: int = 18
@@ -109,7 +108,15 @@ class AppSettings:
     @classmethod
     def from_json_dict(cls, data: dict[str, Any]) -> AppSettings:
         defaults = cls()
-        merged = {**defaults.to_json_dict(), **data}
+        migrated = dict(data)
+        if "read_image_prompt" not in migrated and "read_translation_prompt" in migrated:
+            migrated["read_image_prompt"] = migrated["read_translation_prompt"]
+        migrated.pop("read_translation_prompt", None)
+        migrated.pop("ocr_language", None)
+
+        valid_fields = {field.name for field in fields(cls)}
+        filtered = {key: value for key, value in migrated.items() if key in valid_fields}
+        merged = {**defaults.to_json_dict(), **filtered}
         merged["region_mode"] = RegionMode(merged["region_mode"])
         merged["api_key_source"] = ApiKeySource(merged["api_key_source"])
         merged["saved_region"] = ScreenRegion.from_dict(merged.get("saved_region"))
@@ -137,4 +144,3 @@ class HistoryEntry:
     translated_text: str
     model: str
     metadata: dict[str, Any] = field(default_factory=dict)
-

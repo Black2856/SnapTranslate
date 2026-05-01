@@ -8,7 +8,7 @@ from snaptranslate.domain.state import AppState
 
 
 class FakeTranslator:
-    def translate(self, text: str, prompt: str) -> TranslationResult:
+    def translate_text(self, text: str, prompt: str) -> TranslationResult:
         return TranslationResult(text=f"translated:{text}", model="fake")
 
 
@@ -73,7 +73,7 @@ def test_input_translation_second_run_is_ignored_until_active_translation_finish
     release = threading.Event()
 
     class SlowTranslator:
-        def translate(self, text: str, prompt: str) -> TranslationResult:
+        def translate_text(self, text: str, prompt: str) -> TranslationResult:
             started.set()
             release.wait(timeout=5)
             return TranslationResult(text=f"translated:{text}", model="fake")
