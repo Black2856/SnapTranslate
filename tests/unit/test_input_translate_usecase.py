@@ -4,7 +4,7 @@ import threading
 
 from snaptranslate.application.input_translate_usecase import InputTranslateUseCase
 from snaptranslate.domain.models import AppSettings, TranslationResult
-from snaptranslate.domain.state import AppState
+from snaptranslate.domain.state import AppState, InputState
 
 
 class FakeTranslator:
@@ -102,3 +102,42 @@ def test_input_translation_second_run_is_ignored_until_active_translation_finish
     assert input_window.canceled is False
     assert "[input]: busy" in status.messages
     assert status.messages[-1] == "[input]: copied"
+
+
+def test_input_translation_timeout_releases_busy_state() -> None:
+    class HangingThenWorkingTranslator:
+        def __init__(self) -> None:
+            self.calls = 0
+            self.started = threading.Event()
+
+        def translate_text(self, text: str, prompt: str) -> TranslationResult:
+            self.calls += 1
+            if self.calls == 1:
+                self.started.set()
+                threading.Event().wait()
+            return TranslationResult(text=f"translated:{text}", model="fake")
+
+    clipboard = FakeClipboard()
+    input_window = FakeInputWindow("hello")
+    status = FakeStatus()
+    state = AppState()
+    translator = HangingThenWorkingTranslator()
+    usecase = InputTranslateUseCase(
+        settings=AppSettings(request_timeout_seconds=0.01),
+        state=state,
+        translator=translator,
+        clipboard_service=clipboard,
+        input_window=input_window,
+        status_window=status,
+    )
+
+    usecase.translate_current_text()
+    assert translator.started.wait(timeout=5)
+    assert state.snapshot().input == InputState.ERROR
+    assert "timed out" in status.messages[-1]
+    assert input_window.error == status.messages[-1].replace("[input]: ", "")
+
+    usecase.translate_current_text()
+
+    assert state.snapshot().input == InputState.COPIED
+    assert clipboard.value == "translated:hello"

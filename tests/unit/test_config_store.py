@@ -15,6 +15,7 @@ def test_config_round_trip() -> None:
         saved_region=ScreenRegion(1, 2, 3, 4),
         api_key_source=ApiKeySource.CONFIG,
         api_key="sk-test",
+        request_timeout_seconds=45,
         enable_history=True,
     )
 
@@ -24,5 +25,6 @@ def test_config_round_trip() -> None:
     assert loaded.saved_region == ScreenRegion(1, 2, 3, 4)
     assert loaded.api_key_source == ApiKeySource.CONFIG
     assert loaded.api_key == "sk-test"
+    assert loaded.request_timeout_seconds == 45
     assert loaded.enable_history is True
     path.unlink(missing_ok=True)

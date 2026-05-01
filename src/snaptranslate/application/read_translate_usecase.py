@@ -6,6 +6,7 @@ from threading import Lock
 
 from snaptranslate.domain.models import AppSettings, HistoryEntry, RegionMode
 from snaptranslate.domain.state import AppState, ReadState
+from snaptranslate.application.timeout import run_with_timeout
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ class ReadTranslateUseCase:
 
             self.state.set_read(ReadState.ANALYZING, "[read]: analyzing")
             self.status_window.set_message("[read]: analyzing")
-            result = self.translator.translate_image(image, self.settings.read_image_prompt)
+            result = self._translate_image_with_timeout(image)
             if not result.text.strip():
                 raise RuntimeError("Image translation response was empty.")
 
@@ -94,6 +95,13 @@ class ReadTranslateUseCase:
             logger.exception("Read translation failed")
             self.state.set_read(ReadState.ERROR, "[read]: error")
             self.status_window.set_message(f"[read]: {exc}")
+
+    def _translate_image_with_timeout(self, image):
+        return run_with_timeout(
+            lambda: self.translator.translate_image(image, self.settings.read_image_prompt),
+            self.settings.request_timeout_seconds,
+            f"Read translation timed out after {self.settings.request_timeout_seconds} seconds.",
+        )
 
     def _get_region(self):
         if self.settings.region_mode == RegionMode.SAVED:

@@ -6,7 +6,7 @@ from PIL import Image
 
 from snaptranslate.application.read_translate_usecase import ReadTranslateUseCase
 from snaptranslate.domain.models import AppSettings, ScreenRegion, TranslationResult
-from snaptranslate.domain.state import AppState
+from snaptranslate.domain.state import AppState, ReadState
 
 
 class FakeScreenshot:
@@ -66,3 +66,41 @@ def test_read_translation_duplicate_run_is_blocked() -> None:
     assert status.messages.count("[read]: analyzing") == 1
     assert "[read]: busy" in status.messages
     assert overlay.text == "translated"
+
+
+def test_read_translation_timeout_releases_busy_state() -> None:
+    class HangingThenWorkingTranslator:
+        def __init__(self) -> None:
+            self.calls = 0
+            self.started = threading.Event()
+
+        def translate_image(self, image: Image.Image, prompt: str) -> TranslationResult:
+            self.calls += 1
+            if self.calls == 1:
+                self.started.set()
+                threading.Event().wait()
+            return TranslationResult("translated after retry", "fake")
+
+    state = AppState()
+    status = FakeStatus()
+    overlay = FakeOverlay()
+    translator = HangingThenWorkingTranslator()
+    usecase = ReadTranslateUseCase(
+        settings=AppSettings(saved_region=ScreenRegion(0, 0, 100, 50), request_timeout_seconds=0.01),
+        state=state,
+        region_selector=None,
+        screenshot_service=FakeScreenshot(),
+        translator=translator,
+        overlay_window=overlay,
+        status_window=status,
+    )
+
+    usecase.run()
+    assert translator.started.wait(timeout=5)
+    assert state.snapshot().read == ReadState.ERROR
+    assert "timed out" in status.messages[-1]
+
+    usecase.run()
+
+    assert state.snapshot().read == ReadState.OVERLAY_VISIBLE
+    assert overlay.text == "translated after retry"

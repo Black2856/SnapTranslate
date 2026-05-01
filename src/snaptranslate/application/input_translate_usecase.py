@@ -4,6 +4,7 @@ import logging
 from datetime import datetime, timezone
 from threading import Lock
 
+from snaptranslate.application.timeout import run_with_timeout
 from snaptranslate.domain.models import AppSettings, HistoryEntry
 from snaptranslate.domain.state import AppState, InputState
 
@@ -57,7 +58,7 @@ class InputTranslateUseCase:
         try:
             self.state.set_input(InputState.TRANSLATING, "[input]: translating")
             self.status_window.set_message("[input]: translating")
-            result = self.translator.translate_text(source, self.settings.input_translation_prompt)
+            result = self._translate_text_with_timeout(source)
             self.clipboard_service.copy_text(result.text)
             self.state.set_input(InputState.COPIED, "[input]: copied")
             self.status_window.set_message("[input]: copied")
@@ -83,6 +84,13 @@ class InputTranslateUseCase:
     def _finish_translation(self) -> None:
         with self._lock:
             self._active = False
+
+    def _translate_text_with_timeout(self, source: str):
+        return run_with_timeout(
+            lambda: self.translator.translate_text(source, self.settings.input_translation_prompt),
+            self.settings.request_timeout_seconds,
+            f"Input translation timed out after {self.settings.request_timeout_seconds} seconds.",
+        )
 
     def _append_history(self, mode: str, source: str, translated: str, model: str) -> None:
         if not self.settings.enable_history or not self.history_store:

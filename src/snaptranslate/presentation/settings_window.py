@@ -57,6 +57,11 @@ class SettingsWindow:
             value=ApiKeySource.CONFIG.value,
         ).pack(anchor="w")
         self.api_key = self._entry(inner, "API key", self.settings.api_key, show="*")
+        self.request_timeout = self._entry(
+            inner,
+            "Request timeout seconds",
+            str(self.settings.request_timeout_seconds),
+        )
         self.text_color = self._entry(inner, "Overlay text color", self.settings.overlay_text_color)
         self.font_family = self._entry(inner, "Overlay font", self.settings.overlay_font_family)
         self.font_size = self._entry(inner, "Overlay font size", str(self.settings.overlay_font_size))
@@ -121,6 +126,7 @@ class SettingsWindow:
             self.settings.chatgpt_model = self.model.get().strip()
             self.settings.api_key_source = ApiKeySource(self.api_key_source_var.get())
             self.settings.api_key = self.api_key.get().strip()
+            self.settings.request_timeout_seconds = float(self.request_timeout.get().strip())
             self.settings.overlay_text_color = self.text_color.get().strip()
             self.settings.overlay_font_family = self.font_family.get().strip()
             self.settings.overlay_font_size = int(self.font_size.get().strip())

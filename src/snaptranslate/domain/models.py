@@ -85,7 +85,7 @@ class AppSettings:
     keep_draft_on_hide: bool = True
     enable_history: bool = False
     history_path: str = "%APPDATA%/SnapTranslate/history.jsonl"
-    request_timeout_seconds: int = 30
+    request_timeout_seconds: float = 30
 
     def validate(self) -> None:
         Hotkey(self.read_hotkey).validate()
