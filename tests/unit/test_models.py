@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from snaptranslate.domain.models import AppSettings, Hotkey, ScreenRegion
+from snaptranslate.domain.models import AppSettings, Hotkey, ScreenRegion, UiLanguage
 
 
 def test_hotkey_requires_one_key() -> None:
@@ -23,4 +23,12 @@ def test_screen_region_box() -> None:
     region = ScreenRegion(left=10, top=20, width=30, height=40)
 
     assert region.box == (10, 20, 40, 60)
+
+
+def test_settings_serializes_ui_language() -> None:
+    settings = AppSettings(ui_language=UiLanguage.JA)
+
+    loaded = AppSettings.from_json_dict(settings.to_json_dict())
+
+    assert loaded.ui_language == UiLanguage.JA
 

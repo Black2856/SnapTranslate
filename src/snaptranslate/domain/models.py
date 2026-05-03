@@ -20,6 +20,11 @@ class ReadResultDisplayMode(str, Enum):
     WINDOW = "window"
 
 
+class UiLanguage(str, Enum):
+    EN = "en"
+    JA = "ja"
+
+
 @dataclass(frozen=True)
 class ScreenRegion:
     left: int
@@ -70,6 +75,7 @@ class Hotkey:
 
 @dataclass
 class AppSettings:
+    ui_language: UiLanguage = UiLanguage.EN
     read_hotkey: str = "Ctrl+Shift+F8"
     input_hotkey: str = "Ctrl+Shift+F9"
     region_mode: RegionMode = RegionMode.SAVED
@@ -107,6 +113,7 @@ class AppSettings:
 
     def to_json_dict(self) -> dict[str, Any]:
         data = asdict(self)
+        data["ui_language"] = self.ui_language.value
         data["region_mode"] = self.region_mode.value
         data["api_key_source"] = self.api_key_source.value
         data["read_result_display_mode"] = self.read_result_display_mode.value
@@ -124,6 +131,7 @@ class AppSettings:
         valid_fields = {field.name for field in fields(cls)}
         filtered = {key: value for key, value in migrated.items() if key in valid_fields}
         merged = {**defaults.to_json_dict(), **filtered}
+        merged["ui_language"] = UiLanguage(merged["ui_language"])
         merged["region_mode"] = RegionMode(merged["region_mode"])
         merged["api_key_source"] = ApiKeySource(merged["api_key_source"])
         merged["read_result_display_mode"] = ReadResultDisplayMode(

@@ -34,6 +34,7 @@ Right-click the tray icon to open settings or quit.
 
 ## Settings
 
+- `UI language` / `表示言語`: changes the settings window language. Choose `English` or `Japanese`.
 - `Read hotkey`: starts image translation. If the overlay is visible, the same hotkey hides it. Example: `Ctrl+Shift+F8`.
 - `Input hotkey`: shows or hides the manual text input window. Example: `Ctrl+Shift+F9`.
 - `ChatGPT model`: OpenAI model used for both image and manual text translation. The read workflow requires a model that supports image input.
