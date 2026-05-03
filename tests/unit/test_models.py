@@ -6,7 +6,7 @@ from snaptranslate.domain.models import AppSettings, Hotkey, ScreenRegion, UiLan
 
 
 def test_hotkey_requires_one_key() -> None:
-    Hotkey("Ctrl+Shift+F8").validate()
+    Hotkey("Ctrl+Enter").validate()
 
     with pytest.raises(ValueError):
         Hotkey("Ctrl+Shift").validate()
@@ -31,4 +31,14 @@ def test_settings_serializes_ui_language() -> None:
     loaded = AppSettings.from_json_dict(settings.to_json_dict())
 
     assert loaded.ui_language == UiLanguage.JA
+
+
+def test_default_settings_match_distribution_defaults() -> None:
+    settings = AppSettings()
+
+    assert settings.ui_language == UiLanguage.JA
+    assert settings.read_hotkey == "Ctrl+Enter"
+    assert settings.input_hotkey == "Shift+Enter"
+    assert settings.overlay_font_size == 12
+    assert settings.request_timeout_seconds == 10.0
 

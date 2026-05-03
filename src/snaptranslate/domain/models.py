@@ -75,9 +75,9 @@ class Hotkey:
 
 @dataclass
 class AppSettings:
-    ui_language: UiLanguage = UiLanguage.EN
-    read_hotkey: str = "Ctrl+Shift+F8"
-    input_hotkey: str = "Ctrl+Shift+F9"
+    ui_language: UiLanguage = UiLanguage.JA
+    read_hotkey: str = "Ctrl+Enter"
+    input_hotkey: str = "Shift+Enter"
     region_mode: RegionMode = RegionMode.SAVED
     saved_region: ScreenRegion | None = None
     show_status: bool = True
@@ -91,13 +91,13 @@ class AppSettings:
     read_result_display_mode: ReadResultDisplayMode = ReadResultDisplayMode.OVERLAY
     overlay_text_color: str = "#FFFFFF"
     overlay_font_family: str = "Yu Gothic UI"
-    overlay_font_size: int = 18
+    overlay_font_size: int = 12
     api_key_source: ApiKeySource = ApiKeySource.ENV
     api_key: str = ""
     keep_draft_on_hide: bool = True
     enable_history: bool = False
     history_path: str = "%APPDATA%/SnapTranslate/history.jsonl"
-    request_timeout_seconds: float = 30
+    request_timeout_seconds: float = 10.0
 
     def validate(self) -> None:
         Hotkey(self.read_hotkey).validate()

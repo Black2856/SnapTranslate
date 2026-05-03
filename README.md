@@ -27,16 +27,16 @@ uv run snaptranslate
 
 Default hotkeys:
 
-- `Ctrl+Shift+F8`: run image translation, or hide the overlay if visible.
-- `Ctrl+Shift+F9`: show or hide the text input window.
+- `Ctrl+Enter`: run image translation, or hide the overlay if visible.
+- `Shift+Enter`: show or hide the text input window.
 
 Right-click the tray icon to open settings or quit.
 
 ## Settings
 
 - `UI language` / `表示言語`: changes the settings window language. Choose `English` or `Japanese`.
-- `Read hotkey`: starts image translation. If the overlay is visible, the same hotkey hides it. Example: `Ctrl+Shift+F8`.
-- `Input hotkey`: shows or hides the manual text input window. Example: `Ctrl+Shift+F9`.
+- `Read hotkey`: starts image translation. If the overlay is visible, the same hotkey hides it. Example: `Ctrl+Enter`.
+- `Input hotkey`: shows or hides the manual text input window. Example: `Shift+Enter`.
 - `ChatGPT model`: OpenAI model used for both image and manual text translation. The read workflow requires a model that supports image input.
 - `Overlay text color`: text color on the read-translation overlay. Use a hex color such as `#FFFFFF`.
 - `Overlay font`: font family for overlay text, for example `Yu Gothic UI`.

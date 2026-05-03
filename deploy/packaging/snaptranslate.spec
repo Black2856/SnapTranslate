@@ -20,7 +20,7 @@ a = Analysis(
     [str(ROOT / "src" / "snaptranslate" / "main.py")],
     pathex=[str(ROOT / "src")],
     binaries=[],
-    datas=[],
+    datas=[(str(ROOT / "deploy" / "packaging" / "README_user.txt"), ".")],
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
