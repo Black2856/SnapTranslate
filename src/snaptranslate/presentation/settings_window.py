@@ -26,6 +26,7 @@ TEXT = {
         "language_ja": "Japanese",
         "read_hotkey": "Read hotkey",
         "input_hotkey": "Input hotkey",
+        "read_box_color": "Read box color",
         "keep_draft": "Keep input draft on hide",
         "model": "ChatGPT model",
         "api_key_source": "API key source",
@@ -65,6 +66,7 @@ TEXT = {
         "language_ja": "日本語",
         "read_hotkey": "読み取りホットキー",
         "input_hotkey": "入力ホットキー",
+        "read_box_color": "読み取りボックス色",
         "keep_draft": "非表示時に入力途中のテキストを保持",
         "model": "ChatGPT モデル",
         "api_key_source": "APIキーの取得元",
@@ -98,6 +100,7 @@ TOOLTIPS = {
         "ui_language": "Changes the language used in this settings window after saving and reopening it.",
         "read_hotkey": "Starts image translation. If the overlay is visible, the same hotkey hides it.",
         "input_hotkey": "Shows or hides the manual text input window.",
+        "read_box_color": "Background color for the read translation result box. Use a hex color such as #000000.",
         "keep_draft": "Keeps typed text in the input window when the window is hidden.",
         "model": "OpenAI model used for both image and manual text translation.",
         "api_key_source": "Choose whether the API key comes from the environment or this config file.",
@@ -118,6 +121,7 @@ TOOLTIPS = {
         "ui_language": "保存して設定画面を開き直した後、この設定画面の表示言語を切り替えます。",
         "read_hotkey": "画像翻訳を開始します。結果表示中は同じホットキーで非表示にします。",
         "input_hotkey": "手入力翻訳ウィンドウを表示または非表示にします。",
+        "read_box_color": "読み取り翻訳結果を表示するボックスの背景色です。#000000 のようなHEX色を入力してください。",
         "keep_draft": "入力ウィンドウを閉じても、入力途中のテキストを残します。",
         "model": "画像翻訳と手入力翻訳の両方で使うOpenAIモデルです。",
         "api_key_source": "APIキーを環境変数から読むか、設定ファイルから読むかを選びます。",
@@ -271,6 +275,7 @@ class SettingsWindow:
             "read_result_display",
         )
         self.text_color = self._entry(overlay, "overlay_color", self.settings.overlay_text_color)
+        self.read_box_color = self._entry(overlay, "read_box_color", self.settings.read_box_color)
         self.font_family = self._entry(overlay, "overlay_font", self.settings.overlay_font_family)
         self.font_size = self._entry(overlay, "overlay_font_size", str(self.settings.overlay_font_size))
         self.show_status_var = tk.BooleanVar(value=self.settings.show_status)
@@ -388,6 +393,7 @@ class SettingsWindow:
             self.settings.api_key = self.api_key.get().strip()
             self.settings.request_timeout_seconds = float(self.request_timeout.get().strip())
             self.settings.overlay_text_color = self.text_color.get().strip()
+            self.settings.read_box_color = self.read_box_color.get().strip()
             self.settings.overlay_font_family = self.font_family.get().strip()
             self.settings.overlay_font_size = int(self.font_size.get().strip())
             self.settings.read_result_display_mode = ReadResultDisplayMode(

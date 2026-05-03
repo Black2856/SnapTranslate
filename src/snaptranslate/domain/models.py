@@ -90,6 +90,7 @@ class AppSettings:
     chatgpt_model: str = "gpt-5.4-mini"
     read_result_display_mode: ReadResultDisplayMode = ReadResultDisplayMode.OVERLAY
     overlay_text_color: str = "#FFFFFF"
+    read_box_color: str = "#000000"
     overlay_font_family: str = "Yu Gothic UI"
     overlay_font_size: int = 12
     api_key_source: ApiKeySource = ApiKeySource.ENV
@@ -122,14 +123,8 @@ class AppSettings:
     @classmethod
     def from_json_dict(cls, data: dict[str, Any]) -> AppSettings:
         defaults = cls()
-        migrated = dict(data)
-        if "read_image_prompt" not in migrated and "read_translation_prompt" in migrated:
-            migrated["read_image_prompt"] = migrated["read_translation_prompt"]
-        migrated.pop("read_translation_prompt", None)
-        migrated.pop("ocr_language", None)
-
         valid_fields = {field.name for field in fields(cls)}
-        filtered = {key: value for key, value in migrated.items() if key in valid_fields}
+        filtered = {key: value for key, value in data.items() if key in valid_fields}
         merged = {**defaults.to_json_dict(), **filtered}
         merged["ui_language"] = UiLanguage(merged["ui_language"])
         merged["region_mode"] = RegionMode(merged["region_mode"])

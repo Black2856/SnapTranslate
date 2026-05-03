@@ -104,3 +104,27 @@ def test_read_translation_timeout_releases_busy_state() -> None:
 
     assert state.snapshot().read == ReadState.OVERLAY_VISIBLE
     assert overlay.text == "translated after retry"
+
+
+def test_read_translation_normalizes_display_markup() -> None:
+    class MarkupTranslator:
+        def translate_image(self, image: Image.Image, prompt: str) -> TranslationResult:
+            return TranslationResult(
+                "<c=ff5a5a>[2103]</c><br><c=#ff5a5a>[2103]</c><c=55ccff></c>",
+                "fake",
+            )
+
+    overlay = FakeOverlay()
+    usecase = ReadTranslateUseCase(
+        settings=AppSettings(saved_region=ScreenRegion(0, 0, 100, 50)),
+        state=AppState(),
+        region_selector=None,
+        screenshot_service=FakeScreenshot(),
+        translator=MarkupTranslator(),
+        overlay_window=overlay,
+        status_window=FakeStatus(),
+    )
+
+    usecase.run()
+
+    assert overlay.text == "<c=ff5a5a>[2103]\n[2103]</c>"

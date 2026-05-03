@@ -39,6 +39,10 @@ def test_default_settings_match_distribution_defaults() -> None:
     assert settings.ui_language == UiLanguage.JA
     assert settings.read_hotkey == "Ctrl+Enter"
     assert settings.input_hotkey == "Shift+Enter"
+    assert settings.read_image_prompt == (
+        "Read the text in the image and translate it naturally. Return only the translation."
+    )
     assert settings.overlay_font_size == 12
+    assert settings.read_box_color == "#000000"
     assert settings.request_timeout_seconds == 10.0
 

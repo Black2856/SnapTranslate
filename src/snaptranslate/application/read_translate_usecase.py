@@ -7,6 +7,7 @@ from threading import Lock
 from snaptranslate.domain.models import AppSettings, HistoryEntry, RegionMode
 from snaptranslate.domain.state import AppState, ReadState
 from snaptranslate.application.timeout import run_with_timeout
+from snaptranslate.presentation.markup import normalize_markup
 
 logger = logging.getLogger(__name__)
 
@@ -70,16 +71,17 @@ class ReadTranslateUseCase:
             self.state.set_read(ReadState.ANALYZING, "[read]: analyzing")
             self.status_window.set_message("[read]: analyzing")
             result = self._translate_image_with_timeout(image)
-            if not result.text.strip():
+            translated_text = normalize_markup(result.text)
+            if not translated_text.strip():
                 raise RuntimeError("Image translation response was empty.")
 
-            self.overlay_window.show_text(result.text, region, self.settings)
+            self.overlay_window.show_text(translated_text, region, self.settings)
             self.state.set_read(ReadState.OVERLAY_VISIBLE, "[read]: visible")
             self.status_window.set_message("[read]: visible")
             self._append_history(
                 mode="read",
                 source="[image]",
-                translated=result.text,
+                translated=translated_text,
                 model=result.model,
                 metadata={
                     "region": {

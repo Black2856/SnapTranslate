@@ -62,6 +62,7 @@ Read:
 
 Overlay:
 - `Read result display`: 画像翻訳結果をオーバーレイで表示するか、通常ウィンドウで表示するかを選びます。
+- `Read box color`: 読み取り翻訳結果を表示するボックスの背景色です。例: `#000000`
 - `Overlay text color`: オーバーレイ文字色です。例: `#FFFFFF`
 - `Overlay font`: オーバーレイ文字に使うフォントです。
 - `Overlay font size`: オーバーレイ文字のサイズです。

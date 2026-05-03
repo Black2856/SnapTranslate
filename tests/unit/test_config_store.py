@@ -24,6 +24,7 @@ def test_config_round_trip() -> None:
         api_key="sk-test",
         read_result_display_mode=ReadResultDisplayMode.WINDOW,
         ui_language=UiLanguage.JA,
+        read_box_color="#202020",
         request_timeout_seconds=45,
         enable_history=True,
     )
@@ -36,6 +37,7 @@ def test_config_round_trip() -> None:
     assert loaded.api_key == "sk-test"
     assert loaded.read_result_display_mode == ReadResultDisplayMode.WINDOW
     assert loaded.ui_language == UiLanguage.JA
+    assert loaded.read_box_color == "#202020"
     assert loaded.request_timeout_seconds == 45
     assert loaded.enable_history is True
     path.unlink(missing_ok=True)

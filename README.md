@@ -39,6 +39,7 @@ Right-click the tray icon to open settings or quit.
 - `Input hotkey`: shows or hides the manual text input window. Example: `Shift+Enter`.
 - `ChatGPT model`: OpenAI model used for both image and manual text translation. The read workflow requires a model that supports image input.
 - `Overlay text color`: text color on the read-translation overlay. Use a hex color such as `#FFFFFF`.
+- `Read box color`: background color for the read-translation result box. Use a hex color such as `#000000`.
 - `Overlay font`: font family for overlay text, for example `Yu Gothic UI`.
 - `Overlay font size`: overlay text size in points.
 - `Show status`: shows a small status indicator such as `[read]: translating` or `[input]: copied`.
@@ -50,6 +51,19 @@ Right-click the tray icon to open settings or quit.
 - `Input translation prompt`: prompt template for manual text translation. Keep `{text}` where the typed text should be inserted.
 
 After saving settings, restart the app to re-register changed hotkeys.
+
+## Display Markup
+
+Read-translation results can use simple HTML-like display markup:
+
+- `<br>`, `<br/>`, `<br />`: line break.
+- `<c=ff5a5a>text</c>`: text color.
+- `<b>text</b>`: bold.
+- `<u>text</u>`: underline.
+- `<s>text</s>`: strikethrough.
+- `<em>text</em>`: italic.
+
+Line break tags are normalized to real newlines before display. Empty tags are removed, and adjacent text with the same style is merged.
 
 ## Development
 

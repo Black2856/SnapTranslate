@@ -5,6 +5,7 @@ import tkinter as tk
 from collections.abc import Callable
 
 from snaptranslate.domain.models import AppSettings, ReadResultDisplayMode, ScreenRegion
+from snaptranslate.presentation.markup import MarkupSegment, MarkupStyle, parse_markup
 
 
 class OverlayWindow:
@@ -13,7 +14,7 @@ class OverlayWindow:
         self.on_close = on_close
         self.background_color = "#000000"
         self.window: tk.Toplevel
-        self.label: tk.Label
+        self.text_widget: tk.Text
         self._show_requests: queue.Queue[tuple[str, ScreenRegion, AppSettings]] = queue.Queue()
         self._create_window()
         self.root.after(50, self._drain_show_requests)
@@ -26,16 +27,20 @@ class OverlayWindow:
         self.window.attributes("-alpha", 1.0)
         self.window.configure(bg=self.background_color)
         self.window.protocol("WM_DELETE_WINDOW", self._handle_close)
-        self.label = tk.Label(
+        self.text_widget = tk.Text(
             self.window,
-            text="",
             bg=self.background_color,
-            justify="left",
-            wraplength=400,
             padx=4,
             pady=2,
+            borderwidth=0,
+            cursor="arrow",
+            highlightthickness=0,
+            insertwidth=0,
+            state="disabled",
+            takefocus=False,
+            wrap="word",
         )
-        self.label.pack(fill="both", expand=True)
+        self.text_widget.pack(fill="both", expand=True)
         self.window.withdraw()
         self._configure_as_overlay()
 
@@ -55,15 +60,16 @@ class OverlayWindow:
         self.root.after(50, self._drain_show_requests)
 
     def _show_text(self, text: str, region: ScreenRegion, settings: AppSettings) -> None:
-        if not self.window.winfo_exists() or not self.label.winfo_exists():
+        if not self.window.winfo_exists() or not self.text_widget.winfo_exists():
             self._create_window()
-        self.label.configure(
-            text=text,
+        background_color = _valid_tk_color(self.window, settings.read_box_color, self.background_color)
+        self.window.configure(bg=background_color)
+        self.text_widget.configure(
             fg=settings.overlay_text_color,
-            bg=self.background_color,
+            bg=background_color,
             font=(settings.overlay_font_family, settings.overlay_font_size),
-            wraplength=max(20, region.width),
         )
+        self._render_markup(parse_markup(text), settings)
         if settings.read_result_display_mode == ReadResultDisplayMode.WINDOW:
             self._configure_as_window()
         else:
@@ -71,6 +77,51 @@ class OverlayWindow:
         self.window.geometry(f"{region.width}x{region.height}+{region.left}+{region.top}")
         self.window.deiconify()
         self._bring_to_front(region)
+
+    def _render_markup(self, segments: list[MarkupSegment], settings: AppSettings) -> None:
+        self.text_widget.configure(state="normal")
+        self.text_widget.delete("1.0", "end")
+        for segment in segments:
+            tag_name = self._tag_name(segment.style)
+            if tag_name:
+                self._configure_style_tag(tag_name, segment.style, settings)
+                self.text_widget.insert("end", segment.text, (tag_name,))
+            else:
+                self.text_widget.insert("end", segment.text)
+        self.text_widget.configure(state="disabled")
+
+    def _tag_name(self, style: MarkupStyle) -> str:
+        parts = []
+        if style.bold:
+            parts.append("b")
+        if style.underline:
+            parts.append("u")
+        if style.strikethrough:
+            parts.append("s")
+        if style.italic:
+            parts.append("em")
+        if style.color:
+            parts.append(f"c_{style.color.lstrip('#')}")
+        return "_".join(parts)
+
+    def _configure_style_tag(
+        self, tag_name: str, style: MarkupStyle, settings: AppSettings
+    ) -> None:
+        font_style = " ".join(
+            part for part, enabled in (("bold", style.bold), ("italic", style.italic)) if enabled
+        )
+        font = (
+            (settings.overlay_font_family, settings.overlay_font_size, font_style)
+            if font_style
+            else (settings.overlay_font_family, settings.overlay_font_size)
+        )
+        self.text_widget.tag_configure(
+            tag_name,
+            foreground=style.color or settings.overlay_text_color,
+            font=font,
+            underline=style.underline,
+            overstrike=style.strikethrough,
+        )
 
     def hide(self) -> None:
         self.root.after(0, self.window.withdraw)
@@ -126,3 +177,11 @@ class OverlayWindow:
             )
         except Exception:
             pass
+
+
+def _valid_tk_color(widget: tk.Widget, color: str, fallback: str) -> str:
+    try:
+        widget.winfo_rgb(color)
+    except tk.TclError:
+        return fallback
+    return color
