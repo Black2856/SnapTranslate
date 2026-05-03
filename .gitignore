@@ -6,6 +6,10 @@ __pycache__/
 .venv/
 .tmp/
 pytest-cache-files-*/
+build/
+dist/
+deploy/build/
+deploy/dist/
 
 # Local configuration and logs
 .env

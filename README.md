@@ -58,3 +58,24 @@ uv run --extra dev ruff check .
 ```
 
 The `-p no:cacheprovider` flag avoids pytest cache permission issues on this Windows environment.
+
+## Deployment
+
+SnapTranslate can be packaged as a Windows `onedir` executable. Stop any running SnapTranslate instance before building so `uv` can update the local environment.
+
+```powershell
+uv sync --extra dev
+uv run pyinstaller --clean --noconfirm --distpath deploy/dist --workpath deploy/build deploy/packaging/snaptranslate.spec
+```
+
+The deployable app is created at:
+
+```text
+deploy/dist/SnapTranslate/SnapTranslate.exe
+```
+
+Distribute the whole `deploy/dist/SnapTranslate/` folder, not only `SnapTranslate.exe`, because `_internal/` contains the bundled runtime files. The recipient does not need Python, uv, or project dependencies installed.
+
+Runtime settings and logs are stored under `%APPDATA%/SnapTranslate`. Do not embed API keys in the executable; set `OPENAI_API_KEY` on the target machine before running translations.
+
+Generated files under `deploy/build/` and `deploy/dist/` are ignored by Git. See `deploy/packaging/README.md` for the focused packaging notes.
